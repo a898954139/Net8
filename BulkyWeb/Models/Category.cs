@@ -6,7 +6,6 @@ public class Category
 {
     [Key]
     public int Key { get; set; }
-    [Required]
-    public string? Name { get; set; }
+    public required string? Name { get; set; }
     public int DisplayOrder { get; set; }
 }
