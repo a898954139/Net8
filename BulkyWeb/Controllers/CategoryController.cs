@@ -1,12 +1,20 @@
+using BulkyWeb.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BulkyWeb.Controllers;
 
 public class CategoryController : Controller
 {
-    // GET
+    private readonly ApplicationDbContext _db;
+
+    public CategoryController(ApplicationDbContext db)
+    {
+        _db = db;
+    }
+
     public IActionResult Index()
     {
-        return View();
+        var category = _db.Categories.ToList();
+        return View(category);
     }
 }
