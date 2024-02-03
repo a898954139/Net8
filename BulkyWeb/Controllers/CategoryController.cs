@@ -16,5 +16,11 @@ public class CategoryController : Controller
     {
         var category = _db.Categories.ToList();
         return View(category);
+    }    
+    public IActionResult Create()
+    {
+        return View();
     }
+    
+    
 }

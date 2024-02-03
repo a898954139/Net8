@@ -3,20 +3,31 @@
     ViewBag.Title = "title";
     Layout = "_Layout";
 }
-
-<h2>Category List</h2>
-<table class="table table-bordered table-striped">
-    <thead>
-    <tr>
-        <th>
-            Category Name
-        </th>
-        <th>
-            Display Name
-        </th>
-    </tr>
-    </thead>
-    <tbody>
+<div class="container">
+    <div class="row pt-4 pb-3">
+        <div class="col-6">
+            <h2 class="text-primary-emphasis">
+                Category List
+            </h2>
+        </div>
+        <div class="col-4 text-end">
+            <a class="btn btn-primary" asp-controller="Category" asp-action="Create">
+                <i class="bi bi-plus-circle-fill"></i> Add New Category
+            </a>
+        </div>
+    </div>
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>
+                Category Name
+            </th>
+            <th>
+                Display Name
+            </th>
+        </tr>
+        </thead>
+        <tbody>
         @foreach (var category in Model.OrderBy(o => o.DisplayOrder))
         {
             <tr>
@@ -24,5 +35,6 @@
                 <td>@category.DisplayOrder</td>
             </tr>
         }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
