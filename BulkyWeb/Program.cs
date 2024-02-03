@@ -7,8 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddControllersWithViews()
     .AddRazorRuntimeCompilation();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BulkyDB")));
+builder.Services
+    .AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("BulkyDB")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
