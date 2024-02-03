@@ -1,16 +1,23 @@
+using System.Data.SqlClient;
 using BulkyWeb.Data;
 using BulkyWeb.Models;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace BulkyWeb.Controllers;
 
 public class CategoryController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private IOptionsMonitor<AppSettingsModel> _settings;
 
-    public CategoryController(ApplicationDbContext db)
+    public CategoryController(
+        ApplicationDbContext db, 
+        IOptionsMonitor<AppSettingsModel> settings)
     {
         _db = db;
+        _settings = settings;
     }
 
     public IActionResult Index()
@@ -25,10 +32,29 @@ public class CategoryController : Controller
     [HttpPost]
     public IActionResult Create(Category category)
     {
-        _db.Add(category);
-        _db.SaveChanges();
+        // EfCoreInsert(category);
+        DapperInsert(category);
         return RedirectToAction("Index");
     }
-    
-    
+
+    private void DapperInsert(Category category)
+    {
+        using var con = new SqlConnection(_settings.CurrentValue.BulkyDB);
+        var sql = 
+        @"
+          INSERT INTO [dbo].[Categories] (Name, DisplayOrder)
+          VALUES (@Name, @DisplayOrder)
+        ";
+        con.Execute(sql, new
+        {
+            category.Name,
+            category.DisplayOrder
+        });
+    }
+
+    private void EfCoreInsert(Category category)
+    {
+        _db.Add(category);
+        _db.SaveChanges();
+    }
 }
