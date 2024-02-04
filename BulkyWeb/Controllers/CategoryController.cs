@@ -64,4 +64,14 @@ public class CategoryController : Controller
         _db.Add(category);
         _db.SaveChanges();
     }
+
+    public IActionResult Edit()
+    {
+        return View();
+    }
+
+    public IActionResult Delete()
+    {
+        return View();
+    }
 }
