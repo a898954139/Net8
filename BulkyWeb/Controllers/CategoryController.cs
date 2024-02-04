@@ -68,17 +68,33 @@ public class CategoryController : Controller
 
     public IActionResult Edit(int? id)
     {
-        if (id == null || id == 0)
+        if (id is null or 0)
             return NotFound();
-        return View(GetCategoryById(id));
+        return View(GetCategoryByIdDapper(id));
     }
-
-    private IEnumerable<Category> GetCategoryById([DisallowNull] int? id)
+    
+    [HttpPost]
+    public IActionResult Edit(Category category)
+    {
+        if (!ModelState.IsValid) 
+            return View();
+        _db.Update(category);
+        _db.SaveChanges();
+        return RedirectToAction("Index");
+    }
+    
+    private Category GetCategoryByIdDapper([DisallowNull] int? id)
     {
         var sql = @"SELECT * FROM [dbo].[categories] WHERE Id = @id";
         using var conn = new SqlConnection(_settings.CurrentValue.BulkyDB);
         conn.Open();
-        return conn.Query<Category>(sql, new { Id = id });
+        return conn.Query<Category>(sql, new { Id = id }).FirstOrDefault() 
+               ?? throw new ArgumentException();
+    }    
+    private Category GetCategoryByIdEfCore([DisallowNull] int? id)
+    {
+        return _db.Categories.FirstOrDefault(x => x.Id == id)
+            ?? throw new ArgumentException();
     }
 
     public IActionResult Delete()

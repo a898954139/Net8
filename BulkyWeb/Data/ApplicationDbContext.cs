@@ -9,7 +9,7 @@ namespace BulkyWeb.Data
         {
         }
 
-        public DbSet<Category> Categories { get; set; }
+        public DbSet<Category?> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
