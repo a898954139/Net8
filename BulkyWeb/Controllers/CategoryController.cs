@@ -1,4 +1,5 @@
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 using BulkyWeb.Data;
 using BulkyWeb.Models;
 using Dapper;
@@ -32,11 +33,15 @@ public class CategoryController : Controller
     [HttpPost]
     public IActionResult Create(Category category)
     {
-        if (!ModelState.IsValid)
-            return View();
-        // EfCoreInsert(category);
-        DapperInsert(category);
-        return RedirectToAction("Index");
+        if (ModelState.IsValid)
+        {
+            // EfCoreInsert(category);
+            DapperInsert(category);
+            return RedirectToAction("Index");
+        }
+        if (Regex.IsMatch(category.Name, @"(?i)fuck"))
+            ModelState.AddModelError("name", "Contains sensitive keywords");
+        return View();
     }
 
     private void DapperInsert(Category category)
