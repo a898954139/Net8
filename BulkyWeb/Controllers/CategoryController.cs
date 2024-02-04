@@ -32,6 +32,8 @@ public class CategoryController : Controller
     [HttpPost]
     public IActionResult Create(Category category)
     {
+        if (!ModelState.IsValid)
+            return View();
         // EfCoreInsert(category);
         DapperInsert(category);
         return RedirectToAction("Index");
