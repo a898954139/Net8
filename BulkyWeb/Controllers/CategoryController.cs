@@ -1,4 +1,5 @@
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using BulkyWeb.Data;
 using BulkyWeb.Models;
@@ -65,9 +66,19 @@ public class CategoryController : Controller
         _db.SaveChanges();
     }
 
-    public IActionResult Edit()
+    public IActionResult Edit(int? id)
     {
-        return View();
+        if (id == null || id == 0)
+            return NotFound();
+        return View(GetCategoryById(id));
+    }
+
+    private IEnumerable<Category> GetCategoryById([DisallowNull] int? id)
+    {
+        var sql = @"SELECT * FROM [dbo].[categories] WHERE Id = @id";
+        using var conn = new SqlConnection(_settings.CurrentValue.BulkyDB);
+        conn.Open();
+        return conn.Query<Category>(sql, new { Id = id });
     }
 
     public IActionResult Delete()
