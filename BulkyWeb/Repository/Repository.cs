@@ -23,10 +23,10 @@ public class Repository : IRepository
 
     public Category GetCategoryByIdDapper([DisallowNull] int? id)
     {
-        var query = @"SELECT * FROM [dbo].[categories] WHERE Id = @id";
+        var sql = @"SELECT * FROM [dbo].[categories] WHERE Id = @id";
         using var conn = new SqlConnection(_connectionString);
         conn.Open();
-        return conn.Query<Category>(query, new { Id = id }).FirstOrDefault() ?? throw new ArgumentException();
+        return conn.Query<Category>(sql, new { Id = id }).FirstOrDefault() ?? throw new Exception("Cannot find category");
     }
 
     public void DapperInsert(Category category)
@@ -42,5 +42,12 @@ public class Repository : IRepository
             category.Name,
             category.DisplayOrder
         });
+    }
+
+    public void DeleteCategoryByIdDapper(int? id)
+    {
+        using var conn = new SqlConnection(_connectionString);
+        var sql = @"DELETE FROM [dbo].[categories] WHERE Id = @id";
+        conn.Execute(sql, new { id });
     }
 }

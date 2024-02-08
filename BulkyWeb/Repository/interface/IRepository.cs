@@ -7,4 +7,5 @@ public interface IRepository
 {
     Category GetCategoryByIdDapper([DisallowNull] int? id);
     void DapperInsert(Category category);
+    void DeleteCategoryByIdDapper(int? id);
 }

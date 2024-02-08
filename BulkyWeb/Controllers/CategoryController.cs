@@ -58,11 +58,29 @@ public class CategoryController : Controller
         _db.SaveChanges();
         return RedirectToAction("Index");
     }
-    public IActionResult Delete()
+    public IActionResult Delete(int? id)
     {
-        return View();
+        if (id is null or 0)
+            return NotFound();
+        return View(_repository.GetCategoryByIdDapper(id));
+    }    
+    [HttpPost, ActionName("Delete")]
+    public IActionResult PostDelete(int? id)
+    {
+        if (id is null or 0)
+            return NotFound();
+        // _repository.DeleteCategoryByIdDapper(id);
+        DeleteCategoryByIdEfCore(id);
+        return RedirectToAction("Index");
     }
-    private void EfCoreInsert(Category category)
+
+    private void DeleteCategoryByIdEfCore(int? id)
+    {
+        _db.Categories.Remove(_db.Categories.Find(id) ?? throw new Exception("Category not found"));
+        _db.SaveChanges();
+    }
+
+    private void InsertCategoryEfCore(Category category)
     {
         _db.Add(category);
         _db.SaveChanges();
@@ -70,6 +88,6 @@ public class CategoryController : Controller
     private Category GetCategoryByIdEfCore([DisallowNull] int? id)
     {
         return _db.Categories.FirstOrDefault(x => x.Id == id)
-            ?? throw new ArgumentException();
+            ?? throw new Exception();
     }
 }
