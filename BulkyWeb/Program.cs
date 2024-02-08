@@ -1,5 +1,6 @@
 using BulkyWeb.Data;
 using BulkyWeb.Models;
+using BulkyWeb.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services
         options.UseSqlServer(builder.Configuration.GetConnectionString("BulkyDB")));
 builder.Services
     .Configure<AppSettingsModel>(builder.Configuration.GetSection("ConnectionStrings"));
+builder.Services
+    .AddSingleton<IRepository, Repository>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

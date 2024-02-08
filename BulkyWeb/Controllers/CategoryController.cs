@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using BulkyWeb.Data;
 using BulkyWeb.Models;
+using BulkyWeb.Repository;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -12,14 +13,12 @@ namespace BulkyWeb.Controllers;
 public class CategoryController : Controller
 {
     private readonly ApplicationDbContext _db;
-    private IOptionsMonitor<AppSettingsModel> _settings;
+    private readonly IRepository _repository;
 
-    public CategoryController(
-        ApplicationDbContext db, 
-        IOptionsMonitor<AppSettingsModel> settings)
+    public CategoryController(ApplicationDbContext db, IRepository repository)
     {
         _db = db;
-        _settings = settings;
+        _repository = repository;
     }
 
     public IActionResult Index()
@@ -37,42 +36,19 @@ public class CategoryController : Controller
         if (ModelState.IsValid)
         {
             // EfCoreInsert(category);
-            DapperInsert(category);
+            _repository.DapperInsert(category);
             return RedirectToAction("Index");
         }
         if (Regex.IsMatch(category.Name, @"(?i)fuck"))
             ModelState.AddModelError("name", "Contains sensitive keywords");
         return View();
     }
-
-    private void DapperInsert(Category category)
-    {
-        using var con = new SqlConnection(_settings.CurrentValue.BulkyDB);
-        var sql = 
-        @"
-          INSERT INTO [dbo].[Categories] (Name, DisplayOrder)
-          VALUES (@Name, @DisplayOrder)
-        ";
-        con.Execute(sql, new
-        {
-            category.Name,
-            category.DisplayOrder
-        });
-    }
-
-    private void EfCoreInsert(Category category)
-    {
-        _db.Add(category);
-        _db.SaveChanges();
-    }
-
     public IActionResult Edit(int? id)
     {
         if (id is null or 0)
             return NotFound();
-        return View(GetCategoryByIdDapper(id));
+        return View(_repository.GetCategoryByIdDapper(id));
     }
-    
     [HttpPost]
     public IActionResult Edit(Category category)
     {
@@ -82,23 +58,18 @@ public class CategoryController : Controller
         _db.SaveChanges();
         return RedirectToAction("Index");
     }
-    
-    private Category GetCategoryByIdDapper([DisallowNull] int? id)
+    public IActionResult Delete()
     {
-        var sql = @"SELECT * FROM [dbo].[categories] WHERE Id = @id";
-        using var conn = new SqlConnection(_settings.CurrentValue.BulkyDB);
-        conn.Open();
-        return conn.Query<Category>(sql, new { Id = id }).FirstOrDefault() 
-               ?? throw new ArgumentException();
-    }    
+        return View();
+    }
+    private void EfCoreInsert(Category category)
+    {
+        _db.Add(category);
+        _db.SaveChanges();
+    }
     private Category GetCategoryByIdEfCore([DisallowNull] int? id)
     {
         return _db.Categories.FirstOrDefault(x => x.Id == id)
             ?? throw new ArgumentException();
-    }
-
-    public IActionResult Delete()
-    {
-        return View();
     }
 }
