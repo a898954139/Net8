@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using BulkyWeb.Models;
+using Bulky.Models.Models;
 
-namespace BulkyWeb.Repository;
+namespace BulkyWeb.Repository.Interfaces;
 
-public interface IRepository
+public partial interface IDapperRepository<T> where T : class
 {
     Category GetCategoryByIdDapper([DisallowNull] int? id);
     void DapperInsert(Category category);

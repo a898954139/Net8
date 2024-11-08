@@ -1,6 +1,7 @@
-using BulkyWeb.Data;
-using BulkyWeb.Models;
+using Bulky.DataAccess.Data;
+using Bulky.Models.Models;
 using BulkyWeb.Repository;
+using BulkyWeb.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,7 @@ builder.Services
 builder.Services
     .Configure<AppSettingsModel>(builder.Configuration.GetSection("ConnectionStrings"));
 builder.Services
-    .AddSingleton<IRepository, Repository>();
+    .AddSingleton<IDapperRepository<Category>, DapperRepository>();
 
 var app = builder.Build();
 

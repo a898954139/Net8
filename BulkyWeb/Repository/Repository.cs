@@ -1,53 +1,39 @@
-using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
-using BulkyWeb.Data;
-using BulkyWeb.Models;
-using Dapper;
-using Microsoft.Extensions.Options;
+using System.Linq.Expressions;
+using Bulky.Models.Models;
+using BulkyWeb.Repository.Interfaces;
 
 namespace BulkyWeb.Repository;
 
-public class Repository : IRepository
+public class Repository<T> : IRepository<T> where T : class
 {
-    private string _connectionString;
-
-    public Repository(
-        IOptionsMonitor<AppSettingsModel> settings)
+    public IEnumerable<T> GetAll()
     {
-        _connectionString = settings.CurrentValue.BulkyDB;
-        settings.OnChange(x =>
-        {
-            _connectionString = settings.CurrentValue.BulkyDB;
-        });
+        throw new NotImplementedException();
     }
 
-    public Category GetCategoryByIdDapper([DisallowNull] int? id)
+    public T Get(Expression<Func<T, bool>> filter)
     {
-        var sql = @"SELECT * FROM [dbo].[categories] WHERE Id = @id";
-        using var conn = new SqlConnection(_connectionString);
-        conn.Open();
-        return conn.Query<Category>(sql, new { Id = id }).FirstOrDefault() ?? throw new Exception("Cannot find category");
+        throw new NotImplementedException();
     }
 
-    public void DapperInsert(Category category)
+    public void Add(T entity)
     {
-        using var con = new SqlConnection(_connectionString);
-        var sql = 
-        @"
-          INSERT INTO [dbo].[Categories] (Name, DisplayOrder)
-          VALUES (@Name, @DisplayOrder)
-        ";
-        con.Execute(sql, new
-        {
-            category.Name,
-            category.DisplayOrder
-        });
+        throw new NotImplementedException();
     }
 
-    public void DeleteCategoryByIdDapper(int? id)
+    public void Update(T entity)
     {
-        using var conn = new SqlConnection(_connectionString);
-        var sql = @"DELETE FROM [dbo].[categories] WHERE Id = @id";
-        conn.Execute(sql, new { id });
+        throw new NotImplementedException();
+    }
+
+    public void Delete(T entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void DeleteRange(IEnumerable<T> entity)
+    {
+        throw new NotImplementedException();
     }
 }

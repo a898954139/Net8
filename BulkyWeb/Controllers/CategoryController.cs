@@ -2,33 +2,24 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using BulkyWeb.Data;
-using BulkyWeb.Models;
+using Bulky.DataAccess.Data;
+using Bulky.Models.Models;
 using BulkyWeb.Repository;
+using BulkyWeb.Repository.Interfaces;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace BulkyWeb.Controllers;
 
-public class CategoryController : Controller
+public class CategoryController(
+    ApplicationDbContext db,
+    IDapperRepository<Category> dapperRepository)
+    : Controller
 {
-    private readonly ApplicationDbContext _db;
-    private readonly IRepository _repository;
-
-    # region Constructer
-
-    public CategoryController(ApplicationDbContext db, IRepository repository)
-    {
-        _db = db;
-        _repository = repository;
-    }
-
-    # endregion
-
     public IActionResult Index()
     {
-        var category = _db.Categories.ToList();
+        var category = db.Categories.ToList();
         return View(category);
     }
 
@@ -55,7 +46,7 @@ public class CategoryController : Controller
     {
         if (id is null or 0)
             return NotFound();
-        return View(_repository.GetCategoryByIdDapper(id));
+        return View(dapperRepository.GetCategoryByIdDapper(id));
     }
 
     [HttpPost]
@@ -71,7 +62,7 @@ public class CategoryController : Controller
     {
         if (id is null or 0)
             return NotFound();
-        return View(_repository.GetCategoryByIdDapper(id));
+        return View(dapperRepository.GetCategoryByIdDapper(id));
     }
 
     [HttpPost, ActionName("Delete")]
@@ -108,8 +99,8 @@ public class CategoryController : Controller
 
     private void DeleteCategoryByIdEfCore(int? id)
     {
-        _db.Categories.Remove(_db.Categories.Find(id) ?? throw new Exception("Category not found"));
-        _db.SaveChanges();
+        db.Categories.Remove(db.Categories.Find(id) ?? throw new Exception("Category not found"));
+        db.SaveChanges();
     }
 
     private void TryInsertValue(Category category)
@@ -117,7 +108,7 @@ public class CategoryController : Controller
         try
         {
             // EfCoreInsert(category);
-            _repository.DapperInsert(category);
+            dapperRepository.DapperInsert(category);
             TempData["success"] = "Category successfully created.";
         }
         catch (Exception e)
@@ -131,9 +122,9 @@ public class CategoryController : Controller
     {
         try
         {
-            _db.Update(category);
+            db.Update(category);
             TempData["success"] = "Category updated successfully.";
-            _db.SaveChanges();
+            db.SaveChanges();
         }
         catch (Exception e)
         {
@@ -144,13 +135,13 @@ public class CategoryController : Controller
 
     private void InsertCategoryEfCore(Category category)
     {
-        _db.Add(category);
-        _db.SaveChanges();
+        db.Add(category);
+        db.SaveChanges();
     }
 
     private Category GetCategoryByIdEfCore([DisallowNull] int? id)
     {
-        return _db.Categories.FirstOrDefault(x => x.Id == id)
+        return db.Categories.FirstOrDefault(x => x.Id == id)
                ?? throw new Exception();
     }
 
