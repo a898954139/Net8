@@ -21,7 +21,7 @@ service
 service
     .AddSingleton<IDapperRepository<Category>, DapperRepository>();
 service
-    .AddScoped<ICategoryRepository, CategoryRepository>();
+    .AddScoped<IDatabaseFactory, DatabaseFactory>();
 
 var app = builder.Build();
 
