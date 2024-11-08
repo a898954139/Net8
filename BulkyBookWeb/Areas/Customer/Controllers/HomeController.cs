@@ -5,15 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace BulkyWeb.Areas.Customer.Controllers
 {
     [Area("Customer")]
-    public class HomeController(
-        ILogger<HomeController> logger) : Controller
+    public class HomeController(ILogger<HomeController> logger) 
+        : Controller
     {
         public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
         {
             return View();
         }

@@ -109,7 +109,7 @@ public class CategoryController(
             .CategoryRepository
             .Get(u => u.Id == id);
         dbFactory.CategoryRepository.Delete(obj);
-        dbFactory.CategoryRepository.Save();
+        dbFactory.Save();
     }
 
     private void TryInsertValue(Category category)
@@ -132,13 +132,12 @@ public class CategoryController(
         try
         {
             dbFactory.CategoryRepository.Add(category);
-            dbFactory.CategoryRepository.Save();
+            dbFactory.Save();
             TempData["success"] = "Category successfully created.";
         }
         catch (Exception e)
         {
             TempData["error"] = e.Message;
-            throw;
         }
     }
 
@@ -161,7 +160,7 @@ public class CategoryController(
         try
         {
             dbFactory.CategoryRepository.Update(category);
-            dbFactory.CategoryRepository.Save();
+            dbFactory.Save();
         }
         catch (Exception e)
         {

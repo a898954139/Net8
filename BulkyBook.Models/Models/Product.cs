@@ -13,17 +13,17 @@ public record Product
 
     [Required]
     [DisplayName("List Price")]
-    [Range(1, 1000)]
+    [Range(1, 1000, ErrorMessage = "Price must be between 1 and 1000")]
     public decimal ListPrice { get; set; }
 
     [Required]
     [DisplayName("Price for 1-50")]
-    [Range(1, 1000)]
+    [Range(1, 1000, ErrorMessage = "Price must be between 1 and 1000")]
     public decimal Price { get; set; }
 
     [Required]
     [DisplayName("Price for 51-100")]
-    [Range(1, 1000)]
+    [Range(1, 1000, ErrorMessage = "Price must be between 1 and 1000")]
     public decimal Price50 { get; set; }
 
     [Required]
