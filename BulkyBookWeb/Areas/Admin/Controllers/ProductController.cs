@@ -46,14 +46,69 @@ public class ProductController(IDatabaseFactory dbFactory)
 
     public IActionResult Edit(int? id)
     {
-        if (id is null or 0) return NotFound();
+        if (id is null or 0)
+        {
+            return NotFound();
+        }
         return View(dbFactory
             .ProductRepository
             .Get(u => u.Id == id));
     }
 
-    public IActionResult Delete()
+    [HttpPost]
+    public IActionResult Edit(Product obj)
     {
-        return View();
+        if (!ModelState.IsValid)
+        {
+            return View();
+        }
+        try
+        {
+            dbFactory
+                .ProductRepository
+                .Update(obj);
+            dbFactory.Save();
+            TempData["success"] = "Product successfully updated.";
+        }
+        catch (Exception e)
+        {
+            TempData["error"] = e.Message;
+        }
+        return RedirectToAction("Index");
+    }
+
+    public IActionResult Delete(int? id)
+    {
+        if (id is null or 0)
+        {
+            return NotFound();
+        }
+        return View(dbFactory
+            .ProductRepository
+            .Get( u => u.Id == id));
+    }   
+    
+    [HttpPost]
+    public IActionResult Delete(Product obj)
+    {
+        if (!ModelState.IsValid)
+        {
+            ModelState.AddModelError("Error", "Delete got unexpected error");
+            return View();
+        }
+
+        try
+        {
+            dbFactory
+                .ProductRepository
+                .Delete(obj);
+            dbFactory.Save();
+            TempData["success"] = "Product successfully deleted.";
+        }
+        catch (Exception e)
+        {
+            TempData["error"] = e.Message;
+        }
+        return RedirectToAction("Index");
     }
 }
