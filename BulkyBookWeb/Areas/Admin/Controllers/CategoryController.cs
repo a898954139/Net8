@@ -11,12 +11,13 @@ namespace BulkyWeb.Areas.Admin.Controllers;
 public class CategoryController(
     ApplicationDbContext db,
     IDapperRepository<Category> dapperRepository,
-    ICategoryRepository categoryRepo)
+    IDatabaseFactory dbFactory)
     : Controller
 {
     public IActionResult Index()
     {
-        return View(categoryRepo
+        return View(dbFactory
+            .CategoryRepository
             .GetAll()
             .ToList());
     }
@@ -42,9 +43,10 @@ public class CategoryController(
 
     public IActionResult Edit(int? id)
     {
-        if (id is null or 0)
-            return NotFound();
-        return View(categoryRepo.Get(u => u.Id == id));
+        if (id is null or 0) return NotFound();
+        return View(dbFactory
+            .CategoryRepository
+            .Get(u => u.Id == id));
     }
 
     [HttpPost]
@@ -103,9 +105,11 @@ public class CategoryController(
     
     private void DeleteCategoryByIdEfCore_v2(int? id)
     {
-        var obj = categoryRepo.Get(u => u.Id == id);
-        categoryRepo.Delete(obj);
-        categoryRepo.Save();
+        var obj = dbFactory
+            .CategoryRepository
+            .Get(u => u.Id == id);
+        dbFactory.CategoryRepository.Delete(obj);
+        dbFactory.CategoryRepository.Save();
     }
 
     private void TryInsertValue(Category category)
@@ -127,8 +131,8 @@ public class CategoryController(
     {
         try
         {
-            categoryRepo.Add(category);
-            categoryRepo.Save();
+            dbFactory.CategoryRepository.Add(category);
+            dbFactory.CategoryRepository.Save();
             TempData["success"] = "Category successfully created.";
         }
         catch (Exception e)
@@ -156,8 +160,8 @@ public class CategoryController(
     {
         try
         {
-            categoryRepo.Update(category);
-            categoryRepo.Save();
+            dbFactory.CategoryRepository.Update(category);
+            dbFactory.CategoryRepository.Save();
         }
         catch (Exception e)
         {
@@ -174,8 +178,10 @@ public class CategoryController(
 
     private Category GetCategoryByIdEfCore([DisallowNull] int? id)
     {
-        return db.Categories.FirstOrDefault(x => x.Id == id)
-               ?? throw new Exception();
+        return db
+           .Categories
+           .FirstOrDefault(x => x.Id == id)
+            ?? throw new Exception();
     }
 
     # endregion
