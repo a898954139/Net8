@@ -1,104 +1,149 @@
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using BulkyWeb.Data;
-using BulkyWeb.Models;
+using Bulky.DataAccess.Data;
+using Bulky.Models.Models;
+using BulkyWeb.Repository;
+using BulkyWeb.Repository.Interfaces;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace BulkyWeb.Controllers;
 
-public class CategoryController : Controller
+public class CategoryController(
+    ApplicationDbContext db,
+    IDapperRepository<Category> dapperRepository)
+    : Controller
 {
-    private readonly ApplicationDbContext _db;
-    private IOptionsMonitor<AppSettingsModel> _settings;
-
-    public CategoryController(
-        ApplicationDbContext db, 
-        IOptionsMonitor<AppSettingsModel> settings)
-    {
-        _db = db;
-        _settings = settings;
-    }
-
     public IActionResult Index()
     {
-        var category = _db.Categories.ToList();
+        var category = db.Categories.ToList();
         return View(category);
-    }    
+    }
+
     public IActionResult Create()
     {
         return View();
-    }  
+    }
+
     [HttpPost]
     public IActionResult Create(Category category)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            // EfCoreInsert(category);
-            DapperInsert(category);
-            return RedirectToAction("Index");
+            if (Regex.IsMatch(category.Name, @"(?i)fuck"))
+                ModelState.AddModelError("name", "Contains sensitive keywords");
+            return View();
         }
-        if (Regex.IsMatch(category.Name, @"(?i)fuck"))
-            ModelState.AddModelError("name", "Contains sensitive keywords");
-        return View();
-    }
 
-    private void DapperInsert(Category category)
-    {
-        using var con = new SqlConnection(_settings.CurrentValue.BulkyDB);
-        var sql = 
-        @"
-          INSERT INTO [dbo].[Categories] (Name, DisplayOrder)
-          VALUES (@Name, @DisplayOrder)
-        ";
-        con.Execute(sql, new
-        {
-            category.Name,
-            category.DisplayOrder
-        });
-    }
-
-    private void EfCoreInsert(Category category)
-    {
-        _db.Add(category);
-        _db.SaveChanges();
+        TryInsertValue(category);
+        return RedirectToAction("Index");
     }
 
     public IActionResult Edit(int? id)
     {
         if (id is null or 0)
             return NotFound();
-        return View(GetCategoryByIdDapper(id));
+        return View(dapperRepository.GetCategoryByIdDapper(id));
     }
-    
+
     [HttpPost]
     public IActionResult Edit(Category category)
     {
-        if (!ModelState.IsValid) 
+        if (!ModelState.IsValid)
             return View();
-        _db.Update(category);
-        _db.SaveChanges();
+        TryUpdateCategory(category);
         return RedirectToAction("Index");
     }
-    
-    private Category GetCategoryByIdDapper([DisallowNull] int? id)
+
+    public IActionResult Delete(int? id)
     {
-        var sql = @"SELECT * FROM [dbo].[categories] WHERE Id = @id";
-        using var conn = new SqlConnection(_settings.CurrentValue.BulkyDB);
-        conn.Open();
-        return conn.Query<Category>(sql, new { Id = id }).FirstOrDefault() 
-               ?? throw new ArgumentException();
-    }    
-    private Category GetCategoryByIdEfCore([DisallowNull] int? id)
-    {
-        return _db.Categories.FirstOrDefault(x => x.Id == id)
-            ?? throw new ArgumentException();
+        if (id is null or 0)
+            return NotFound();
+        return View(dapperRepository.GetCategoryByIdDapper(id));
     }
 
-    public IActionResult Delete()
+    [HttpPost, ActionName("Delete")]
+    public IActionResult PostDelete(int? id)
     {
-        return View();
+        if (IsInvalidId(id))
+            return NotFound();
+        TryDeleteCategory(id);
+        return RedirectToAction("Index");
     }
+
+
+    # region private methods
+
+    private void TryDeleteCategory(int? id)
+    {
+        try
+        {
+            // _repository.DeleteCategoryByIdDapper(id);
+            DeleteCategoryByIdEfCore(id);
+            TempData["success"] = "Category deleted successfully";
+        }
+        catch (Exception e)
+        {
+            TempData["error"] = e.Message;
+            throw;
+        }
+    }
+
+    private static bool IsInvalidId(int? id)
+    {
+        return id is null or 0;
+    }
+
+    private void DeleteCategoryByIdEfCore(int? id)
+    {
+        db.Categories.Remove(db.Categories.Find(id) ?? throw new Exception("Category not found"));
+        db.SaveChanges();
+    }
+
+    private void TryInsertValue(Category category)
+    {
+        try
+        {
+            // EfCoreInsert(category);
+            dapperRepository.DapperInsert(category);
+            TempData["success"] = "Category successfully created.";
+        }
+        catch (Exception e)
+        {
+            TempData["error"] = e.Message;
+            throw;
+        }
+    }
+
+    private void TryUpdateCategory(Category category)
+    {
+        try
+        {
+            db.Update(category);
+            TempData["success"] = "Category updated successfully.";
+            db.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            TempData["error"] = e.Message;
+            throw;
+        }
+    }
+
+    private void InsertCategoryEfCore(Category category)
+    {
+        db.Add(category);
+        db.SaveChanges();
+    }
+
+    private Category GetCategoryByIdEfCore([DisallowNull] int? id)
+    {
+        return db.Categories.FirstOrDefault(x => x.Id == id)
+               ?? throw new Exception();
+    }
+
+    # endregion
 }
