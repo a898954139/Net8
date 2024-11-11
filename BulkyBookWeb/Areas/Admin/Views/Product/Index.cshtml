@@ -8,7 +8,7 @@
             </h2>
         </div>
         <div class="col-4 text-end">
-            <a class="btn btn-primary" asp-controller="Product" asp-action="Create">
+            <a class="btn btn-primary" asp-controller="Product" asp-action="Upsert">
                 <i class="bi bi-plus-circle-fill"></i> Add New Product
             </a>
         </div>
@@ -17,7 +17,7 @@
         <thead>
         <tr>
             @{
-                var columns = typeof(Bulky.Models.Models.Product).GetProperties();
+                var columns = typeof(Product).GetProperties();
                 foreach (var col in columns)
                 {
                     <th>@col.Name</th>
@@ -35,7 +35,7 @@
                 }
                 <td>
                     <div class="w-75 btn-group" role="group">
-                        <a asp-controller="Product" asp-action="Edit" asp-route-Id="@product.Id" class="btn btn-primary me-2">
+                        <a asp-controller="Product" asp-action="Upsert" asp-route-Id="@product.Id" class="btn btn-primary me-2">
                             <i class="bi bi-pen-fill"></i> Edit
                         </a>
                         <a asp-controller="Product" asp-action="Delete" asp-route-Id = "@product.Id" class="btn btn-danger me-2">

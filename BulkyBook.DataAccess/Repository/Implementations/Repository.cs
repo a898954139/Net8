@@ -16,11 +16,9 @@ public class Repository<T>(
         return query.ToList();
     }
 
-    public T Get(Expression<Func<T, bool>> filter)
+    public T? Get(Expression<Func<T, bool>> filter)
     {
-        IQueryable<T> query = _dbSet; // Start with the DbSet
-        query = query.Where(filter); // Apply the filter
-        return query.FirstOrDefault(); 
+        return _dbSet.Where(filter).FirstOrDefault(); 
     }
 
     public void Add(T entity)

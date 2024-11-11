@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BulkyWeb.Areas.Customer.Controllers
 {
     [Area("Customer")]
-    public class HomeController(ILogger<HomeController> logger) 
-        : Controller
+    public class HomeController : Controller
     {
         public IActionResult Index()
         {

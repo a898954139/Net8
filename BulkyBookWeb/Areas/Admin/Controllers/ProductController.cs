@@ -1,6 +1,8 @@
 using Bulky.DataAccess.Repository.Interfaces;
 using Bulky.Models.Models;
+using Bulky.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BulkyWeb.Areas.Admin.Controllers;
 
@@ -15,66 +17,82 @@ public class ProductController(IDatabaseFactory dbFactory)
             .GetAll()
             .ToList());
     }
-
-    public IActionResult Create()
+    
+    public IActionResult Upsert(int? id)
     {
-        return View(); 
-    }   
+        var isCreateView = id is null or 0;
+        if (isCreateView)
+        {
+            return View();
+        }
+
+        try
+        {
+            var (categoryList, product) = TryGetProductVm(id);
+            return View(new ProductVm(product, categoryList));
+        }
+        catch (Exception e)
+        {
+            TempData["error"] = e.Message;
+            return View();
+        }
+    }
     
     [HttpPost]
-    public IActionResult Create(Product obj)
+    public IActionResult Upsert(ProductVm obj, IFormFile? file)
     {
-        if (!ModelState.IsValid)
-        {
-            ModelState.AddModelError("Error", "Please fill validate fields");
-            return View();
-        }
-        
         try
         {
-            dbFactory.ProductRepository.Add(obj);
-            dbFactory.Save();
-            TempData["success"] = "Category successfully created.";
+            if (!ModelState.IsValid)
+            {
+                ModelState.AddModelError("Error", "Please fill validate fields");
+                return View();
+            }
+        
+            try
+            {
+                dbFactory
+                    .ProductRepository
+                    .Add(obj.Product);
+                dbFactory.Save();
+                TempData["success"] = "Category successfully created.";
+            }
+            catch (Exception e)
+            {
+                TempData["error"] = e.Message;
+                return View();
+            }
+        
+            return RedirectToAction("Index");             
         }
         catch (Exception e)
         {
             TempData["error"] = e.Message;
+            return View();
         }
-        
-        return RedirectToAction("Index"); 
     }
 
-    public IActionResult Edit(int? id)
+    private (List<SelectListItem> categoryList, Product product) TryGetProductVm(int? id)
     {
-        if (id is null or 0)
-        {
-            return NotFound();
-        }
-        return View(dbFactory
+        var categoryList = dbFactory
+            .CategoryRepository
+            .GetAll()
+            .Select(u => new SelectListItem
+            {
+                Text = u.Name,
+                Value = u.Id.ToString()
+            })
+            .ToList();
+
+        var product = dbFactory
             .ProductRepository
-            .Get(u => u.Id == id));
-    }
+            .Get(u => u.Id == id);
 
-    [HttpPost]
-    public IActionResult Edit(Product obj)
-    {
-        if (!ModelState.IsValid)
+        if (product == null)
         {
-            return View();
+            throw new Exception("Didn't find any product with this id.");
         }
-        try
-        {
-            dbFactory
-                .ProductRepository
-                .Update(obj);
-            dbFactory.Save();
-            TempData["success"] = "Product successfully updated.";
-        }
-        catch (Exception e)
-        {
-            TempData["error"] = e.Message;
-        }
-        return RedirectToAction("Index");
+        return (categoryList, product);
     }
 
     public IActionResult Delete(int? id)

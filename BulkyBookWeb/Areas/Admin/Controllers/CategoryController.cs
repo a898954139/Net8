@@ -108,6 +108,10 @@ public class CategoryController(
         var obj = dbFactory
             .CategoryRepository
             .Get(u => u.Id == id);
+        if (obj == null)
+        {
+            return;
+        }
         dbFactory.CategoryRepository.Delete(obj);
         dbFactory.Save();
     }
