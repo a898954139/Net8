@@ -34,6 +34,13 @@
                             </select>
                         </div>
                         break;
+                    case "ImageUrl":
+                        <div class="row pb-2 p-1">
+                            <label class="pb-2" for="@col.Name">Image</label>
+                            <input type="file" name="@col.Name" id="@col.Name" class="form-control border-0 shadow"/>
+                            <span class="text-danger" id="validation_@col.Name"></span>
+                        </div>
+                        break;
                     default:
                         <div class="row pb-2 p-1">
                             <label class="pb-2" for="@col.Name">@col.Name</label>
