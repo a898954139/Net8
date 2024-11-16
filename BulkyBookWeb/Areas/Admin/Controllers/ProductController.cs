@@ -23,7 +23,7 @@ public class ProductController(IDatabaseFactory dbFactory)
         var isCreateView = id is null or 0;
         if (isCreateView)
         {
-            return View();
+            return View(GetDefaultProductVm());
         }
 
         try
@@ -37,7 +37,7 @@ public class ProductController(IDatabaseFactory dbFactory)
             return View();
         }
     }
-    
+
     [HttpPost]
     public IActionResult Upsert(ProductVm obj, IFormFile? file)
     {
@@ -46,7 +46,7 @@ public class ProductController(IDatabaseFactory dbFactory)
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("Error", "Please fill validate fields");
-                return View();
+                return View(GetDefaultProductVm());
             }
         
             try
@@ -128,5 +128,18 @@ public class ProductController(IDatabaseFactory dbFactory)
             TempData["error"] = e.Message;
         }
         return RedirectToAction("Index");
+    }
+    
+    private ProductVm GetDefaultProductVm()
+    {
+        return new ProductVm(
+            new Product(),
+            dbFactory
+                .CategoryRepository.GetAll()
+                .Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                }));
     }
 }

@@ -1,71 +1,71 @@
-@using NuGet.Packaging
 @model ProductVm
-<form method="post">
-    <div class="border p-3 mt-4">
-        <div class="row pb-3">
-            <h2 class="text-white py-2">
-                @{
-                    var title = Model.Product.Id == 0 ? "Create" : "Update";
-                }
-                @title Product
-            </h2>
-            <hr/>
-        </div>
-        <div asp-validation-summary="All"></div>
-        <input asp-for="Product.Id" type="hidden"/>
-        @{
-            var columns = ProductVm.GetAllProperties();
-            foreach (var col in columns)
-            {
-                if (col.Name == "Id")
-                {
-                    continue;
-                }
-
-                switch (col.Name)
-                {
-                    case "Id" or "CategoryId" or "Category":
-                        break;
-                    case "CategoryList":
-                        <div class="row pb-2 p-1">
-                            <label class="pb-2" for="@col.Name">Category</label>
-                            <select asp-for="Product.CategoryId" asp-items="@Model?.CategoryList" class="form-control border-0 shadow">
-                                <option disabled selected>-- Select Category --</option>
-                            </select>
-                        </div>
-                        break;
-                    case "ImageUrl":
-                        <div class="row pb-2 p-1">
-                            <label class="pb-2" for="@col.Name">Image</label>
-                            <input type="file" name="@col.Name" id="@col.Name" class="form-control border-0 shadow"/>
-                            <span class="text-danger" id="validation_@col.Name"></span>
-                        </div>
-                        break;
-                    default:
-                        <div class="row pb-2 p-1">
-                            <label class="pb-2" for="@col.Name">@col.Name</label>
-                            <input type="text" name="@col.Name" id="@col.Name" class="form-control border-0 shadow" value="@Model?.GetType().GetProperty(col.Name)?.GetValue(Model, null)"/>
-                            <span class="text-danger" id="validation_@col.Name"></span>
-                        </div>
-                        break;
-                }
-            }
-        }
-
-        <div class="row pt-3">
-            <div class="col-6">
-                <button type="submit" class="btn btn-primary form-control">@title Product</button>
-            </div>
-            <div class="col-6">
-                <a class="btn btn-secondary border form-control" asp-controller="Product" asp-action="Index">Back To List</a>
+<div class="card shadow border-0 my-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h2 class="text-white py-2">@(Model.Product.Id != 0 ? "Update" : "Create") Product</h2>
             </div>
         </div>
     </div>
-</form>
+    <div class="card-body p-4">
+        <form method="post" class="row" enctype="multipart/form-data">
+            <input asp-for="Product.Id" type="hidden"/>
+            <div class="border p-3 mt-4">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                @{
+                    var columns = ProductVm.GetAllProperties();
+                    foreach (var col in columns)
+                    {
+                        if (col.Name == "Id")
+                        {
+                            continue;
+                        }
+
+                        switch (col.Name)
+                        {
+                            case "Id" or "CategoryId" or "Category":
+                                break;
+                            case "CategoryList":
+                                <div class="row pb-2 p-1">
+                                    <label class="pb-2" for="@col.Name">Category</label>
+                                    <select asp-for="Product.CategoryId" asp-items="@Model?.CategoryList" class="form-control border-0 shadow">
+                                        <option disabled selected>-- Select Category --</option>
+                                    </select>
+                                    <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
+                                </div>
+                                break;
+                            case "ImageUrl":
+                                <div class="row pb-2 p-1">
+                                    <label class="pb-2" for="@col.Name">Image</label>
+                                    <input asp-for="Product.ImageUrl" type="file" class="form-control border-0 shadow"/>
+                                    <span asp-validation-for="Product.ImageUrl" class="text-danger"></span>
+                                </div>
+                                break;
+                            default:
+                                <div class="row pb-2 p-1">
+                                    <label class="pb-2" for="@col.Name">@col.Name</label>
+                                    <input asp-for="@col.Name" class="form-control border-0 shadow"/>
+                                    <span asp-validation-for="@col.Name" class="text-danger"></span>
+                                </div>
+                                break;
+                        }
+                    }
+                }
+
+                <div class="row pt-3">
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-primary form-control">@(Model.Product.Id != 0 ? "Update" : "Create") Product</button>
+                    </div>
+                    <div class="col-6">
+                        <a class="btn btn-secondary border form-control" asp-controller="Product" asp-action="Index">Back To List</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 @section Scripts
 {
-    @{
-        <partial name="_ValidationScriptsPartial"/>
-    }
+    <partial name="_ValidationScriptsPartial" />
 }
